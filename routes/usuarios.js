@@ -1,10 +1,12 @@
 const { Router } = require('express');
-const { check } = require('express-validator');
+const { body, param } = require('express-validator');
 
-const {validarCampos} = require('../middlewares/validar-campos');
 const { esRoleValido, emailExiste, existeUsuarioPorId } = require('../helpers/db-validators');
 
-const { usuariosGet, usuariosPut, usuariosPost, usuariosDelete, usuariosPatch } = require('../controllers/usuarios');
+const { usuariosGet, usuariosPut, usuariosPost, usuariosDelete} = require('../controllers/usuarios');
+
+
+const {validarCampos, validarJWT, esAdminRole, tieneRole} = require('../middlewares');
 
 
 const router = Router();
@@ -12,27 +14,27 @@ const router = Router();
 router.get('/', usuariosGet);
 
 router.put('/:id', [
-    check('id', 'No es un ID válido').isMongoId().bail(), //El .bail() NO ES NECESARIO
-    check('id').custom(existeUsuarioPorId).bail(),
-    check('rol').custom(esRoleValido).bail(),
+    param('id', 'No es un ID válido').isMongoId().bail(), //El .bail() NO ES NECESARIO
+    param('id').custom(existeUsuarioPorId).bail(),
+    body('rol').custom(esRoleValido).bail(),
     validarCampos
 ], usuariosPut);
 
 router.post('/', [
-    check('nombre', 'El nombre es obligatorio').notEmpty(),
-    check('password', 'El password debe de ser más de 6 letras').isLength({min: 6}),
-    check('correo', 'El correo no es válido').isEmail(),
-    check('correo').custom(emailExiste),
-    check('rol').custom(esRoleValido),
+    body('nombre', 'El nombre es obligatorio').notEmpty(),
+    body('password', 'El password debe de ser más de 6 letras').isLength({min: 6}),
+    body('correo', 'El correo no es válido').isEmail(),
+    body('correo').custom(emailExiste),
+    body('rol').custom(esRoleValido),
     validarCampos
 ] , usuariosPost);
 
 router.delete('/:id', [
-    check('id', 'No es un ID válido').isMongoId(),
-    check('id').custom(existeUsuarioPorId),
+    validarJWT,
+    tieneRole('ADMIN_ROLE', 'VENTAS_ROLE'),
+    param('id', 'No es un ID válido').isMongoId(),
+    param('id').custom(existeUsuarioPorId),
     validarCampos
 ], usuariosDelete);
 
-router.patch('/', usuariosPatch);
-
-module.exports = router;  
+module.exports = router;

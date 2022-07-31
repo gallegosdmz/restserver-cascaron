@@ -41,7 +41,9 @@ const UsuarioSchema = Schema({
 
 //Sacar contraseña y __v de la respuesta del POST
 UsuarioSchema.methods.toJSON = function() {
-    const {__v, password, ...usuario} = this.toObject();
+    const {__v, password, _id, ...usuario} = this.toObject();
+    usuario.uid = _id;
+    
     return usuario;
 }
 
