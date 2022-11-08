@@ -6,13 +6,14 @@ const txtUid = document.querySelector('#txtUid');
 const txtMensaje = document.querySelector('#txtMensaje');
 const ulUsuarios = document.querySelector('#ulUsuarios');
 const ulMensajes = document.querySelector('#ulMensajes');
+const ulMensajesPriv = document.querySelector('#ulMensajesPriv');
 const btnSalir = document.querySelector('#btnSalir');
 
 const validarJWT = async() => {
     const token = localStorage.getItem('token') || '';
 
     if (token.length <= 10) {
-        window.location = 'index.html';
+        window.location = 'login.html';
         throw new Error('No hay token en el servidor');
     }
 
@@ -53,7 +54,7 @@ const conectarSocket = async() => {
     });
 
     socket.on('mensaje-privado', (payload) => {
-        console.log(payload);
+        dibujarMensajesPriv(payload);
     });
 }
 
@@ -104,6 +105,21 @@ const dibujarMensajes = (mensajes = []) => {
             </li>
         `;
     });
+
+    ulMensajes.innerHTML = mensajesHtml;
+}
+
+const dibujarMensajesPriv = ({de, mensaje}) => {
+    let mensajesHtml = '';
+
+        mensajesHtml += `
+            <li>
+                <p>
+                    <span class="text-primary">${de}</span>
+                    <span>${mensaje}</span>
+                </p>
+            </li>
+        `;
 
     ulMensajes.innerHTML = mensajesHtml;
 }
